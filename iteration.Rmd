@@ -14,5 +14,119 @@ knitr::opts_chunk$set(
 )
 ```
 
+When to write funtions - if you have to use the code more than twice 
 
+Parts to a function: 
+
+- arguments (inputs) 
+  these get used by the cody in the body (i.e., x in mean(x)) - na.rm = FALSE is the default, but you'll sometimes was to change things 
+  
+- body (code that does stuff) 
+  starts with data/ input checks using conditional execution (check that whatever input you provide is allowed in the function that you created) , performs operations, format output 
+  
+- return objects (what the function produces) 
+  implicit - last value produced by the function or explicit - return a specific thing 
+  can return single values or a collection of values (he prefers returning dataframes)
+  named or unnamed 
+  
+SCOPING 
+- will help prevent/ identify errors
+- if you have x in your function, it'll look in the function and then if its not there then itll look in your environment. 
+- this will be a problem if you have x in the function and also x in the workspace, it can cross over if there are issues 
+
+CONDITIONAL EXECUTION 
+- going through some checks at the beginning of the body of the function 
+Code: if (condition_1) {thing_1} 
+else if (condition_2) {thing_2}
+else {thing_3}
+
+HOW TO WRITE FUNCTIONS 
+- start with the smallest possible, least complicated version 
+- if it works, then add complexity 
+
+## Start coding 
+
+## Z scores
+
+subtract mean and divide by the standard deviation 
+
+```{r}
+x_vec = rnorm(25, mean = 5, sd = 4) 
+
+(x_vec - mean(x_vec)) / sd(x_vec)
+```
+
+Decide we want to do this to a lot of different vectors 
+
+```{r}
+z_scores = function(x) {
+  
+  z = (x - mean(x)) / sd(x)
+  
+  return(z)
+  
+}
+```
+
+Function of an x input, 
+body of function within curly brackets 
+
+I want to use argument x 
+THEN return z
+
+Now try to use it
+
+```{r}
+z_scores(x = x_vec)
+```
+
+Looks like the same collection of z scores 
+
+```{r}
+y_vec = rnorm(40, mean = 12, sd = .3) 
+
+z_scores(y_vec)
+
+```
+
+How great is this! 
+
+```{r, error = TRUE}
+z_scores(3)
+
+z_scores(c("my", "name", "is", "christie"))
+
+mtcars
+
+z_scores(mtcars)
+
+```
+
+NA is probably not what i want to have happen
+
+ERROR 
+
+ERROR
+
+The things that are going wrong here, my function shouuld work if I give it a collection of numbers that I can take the mean of 
+
+Update z_scores function to be better
+
+```{r, error = TRUE}
+z_scores = function(x) {
+  
+  if(!is.numeric(x)) {
+    stop("x needs to be numeric")
+  }
+  if(length(x) < 3) {
+    stop("x should have at least 3 numbers")
+  }
+  z = (x - mean(x)) / sd(x)
+  
+  return(z)
+  
+}
+```
+
+If something is going to break, it should break early and informatively 
 
