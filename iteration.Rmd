@@ -130,3 +130,43 @@ z_scores = function(x) {
 
 If something is going to break, it should break early and informatively 
 
+## Multiple outputs 
+
+If I give you something things, I want the mean and standard deviation 
+
+```{r}
+mean_and_sd = function(x) {
+  
+  if(!is.numeric(x)) {
+    stop("x needs to be numeric")
+  }
+  if(length(x) < 3) {
+    stop("x should have at least 3 numbers")
+  }
+  mean_x = mean(x) 
+  sd_x = sd(x)
+  
+  output_df = 
+    tibble(
+      mean = mean_x, 
+      sd = sd_x
+    )
+  
+  return(output_df)
+  
+}
+```
+
+```{r}
+mean_and_sd(y_vec)
+mean_and_sd(x_vec)
+```
+
+Defined x as y_vec then you can work things through without doing the full function just using the environment, but you have to be careful of this 
+
+Every once in a while, you should restart your session or do rm(x) from the environment to make sure things still work 
+
+
+
+
+
