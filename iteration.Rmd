@@ -166,6 +166,53 @@ Defined x as y_vec then you can work things through without doing the full funct
 
 Every once in a while, you should restart your session or do rm(x) from the environment to make sure things still work 
 
+## Different sample sizes, means, and sds
+
+```{r}
+sim_data = 
+  tibble(
+  x = rnorm(30, mean = 2, sd = 3) 
+  )
+
+sim_data %>% 
+  summarize(
+    mean = mean(x), 
+    sd = sd(x)
+  )
+```
+
+Let's write a function that simulates data, computes the mean and sd. 
+
+mu and sigma are the true things 
+
+allows multiple function inputs which map to different things in my code 
+
+everything should be self contained
+
+```{r}
+sim_mean_sd = function (n, mu, sigma) {
+  
+  # do checks on inputs 
+  
+  sim_data = 
+    tibble(
+    x = rnorm(n, mean = mu, sd = sigma) 
+    )
+  
+  sim_data %>% 
+    summarize(
+      mean = mean(x), 
+      sd = sd(x)
+    )
+  
+}
+
+sim_mean_sd(30, 4, 3)
+
+```
+
+
+
 
 
 
