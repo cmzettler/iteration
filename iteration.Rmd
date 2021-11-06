@@ -6,6 +6,7 @@ output: github_document
 ```{r}
 library(tidyverse)
 library(knitr)
+library(rvest)
 
 knitr::opts_chunk$set(
   fig.width = 6, 
@@ -211,7 +212,115 @@ sim_mean_sd(30, 4, 3)
 
 ```
 
+## Revisit Napolean Dynamite 
 
+```{r}
+url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=1"
+
+dynamite_html = read_html(url)
+
+review_titles = 
+  dynamite_html %>%
+  html_elements(".a-text-bold span") %>%
+  html_text()
+
+review_stars = 
+  dynamite_html %>%
+  html_elements("#cm_cr-review_list .review-rating") %>%
+  html_text()
+
+review_text = 
+  dynamite_html %>%
+  html_elements(".review-text-content span") %>%
+  html_text()
+
+reviews = 
+  tibble(
+    title = review_titles,
+    stars = review_stars,
+    text = review_text
+)
+
+```
+
+Okay but there are a lot of pages of reviews 
+
+Could copy and paste everything above to page number 2, 3, 4, 5, and update the reviews df to 2, 3, 4, etc. 
+
+Instead, write a function that gets reviews based on page url
+
+```{r}
+get_page_reviews = function(page_url) {
+  
+  page_html = read_html(page_url)
+
+  review_titles = 
+    page_html %>%
+    html_elements(".a-text-bold span") %>%
+    html_text()
+  
+  review_stars = 
+    page_html %>%
+    html_elements("#cm_cr-review_list .review-rating") %>%
+    html_text()
+  
+  review_text = 
+    page_html %>%
+    html_elements(".review-text-content span") %>%
+    html_text()
+  
+  reviews = 
+    tibble(
+      title = review_titles,
+      stars = review_stars,
+      text = review_text
+  )
+  
+  return(reviews)
+  
+}
+
+page_url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=1"
+
+get_page_reviews(page_url)
+
+url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=2"
+
+get_page_reviews(url)
+
+url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=3"
+
+get_page_reviews(url)
+
+base_url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber="
+
+urls = str_c(base_url, 1:5)
+
+bind_rows(
+  get_page_reviews(urls[1]),
+  get_page_reviews(urls[2]),
+  get_page_reviews(urls[3]),
+  get_page_reviews(urls[4]),
+  get_page_reviews(urls[5]))
+```
+
+Supposed I want to change something else - you can also add that into the function (i.e., get rid of the \n at the beginning of the function)
+
+You can pass in a summary function into your function (i.e., summarize this vector using the mean, median, standard deviation, etc.) - useful in factor reorder according to the median 
+
+EXAMPLE OF SCOPING
+
+```{r}
+f = function(x) {
+  z = x + y 
+  z
+}
+
+x = 1
+y = 2 
+
+f(x = y) 
+```
 
 
 

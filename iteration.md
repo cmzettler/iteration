@@ -18,7 +18,17 @@ library(tidyverse)
 
 ``` r
 library(knitr)
+library(rvest)
+```
 
+    ## 
+    ## Attaching package: 'rvest'
+
+    ## The following object is masked from 'package:readr':
+    ## 
+    ##     guess_encoding
+
+``` r
 knitr::opts_chunk$set(
   fig.width = 6, 
   fig.asp = .6, 
@@ -69,11 +79,11 @@ x_vec = rnorm(25, mean = 5, sd = 4)
 (x_vec - mean(x_vec)) / sd(x_vec)
 ```
 
-    ##  [1]  0.536758266  0.042045724 -0.855749766  0.764748851 -0.133760118
-    ##  [6]  0.878902168 -0.361043796 -0.902950985 -0.736838782  1.381483621
-    ## [11]  0.367803840 -2.060614053  0.717360795 -0.050196047  1.108827566
-    ## [16]  0.978078281 -2.132055585 -0.002847095  0.426777017 -1.401872034
-    ## [21]  1.933213055 -0.505638940  0.372273341 -0.521256307  0.156550983
+    ##  [1] -0.09572689  0.67399096 -0.99920839  0.33863256  0.75257328  1.95016139
+    ##  [7]  0.19348458  0.08252495 -2.15560172  0.02723626 -1.04292104  0.79587594
+    ## [13] -0.70743943 -0.70625483  0.33584198  1.35047546  0.32271769  0.71725218
+    ## [19]  0.01952805 -1.24065576 -1.20637254 -0.79186555 -0.91901687  1.84674563
+    ## [25]  0.45802210
 
 Decide we want to do this to a lot of different vectors
 
@@ -97,11 +107,11 @@ Now try to use it
 z_scores(x = x_vec)
 ```
 
-    ##  [1]  0.536758266  0.042045724 -0.855749766  0.764748851 -0.133760118
-    ##  [6]  0.878902168 -0.361043796 -0.902950985 -0.736838782  1.381483621
-    ## [11]  0.367803840 -2.060614053  0.717360795 -0.050196047  1.108827566
-    ## [16]  0.978078281 -2.132055585 -0.002847095  0.426777017 -1.401872034
-    ## [21]  1.933213055 -0.505638940  0.372273341 -0.521256307  0.156550983
+    ##  [1] -0.09572689  0.67399096 -0.99920839  0.33863256  0.75257328  1.95016139
+    ##  [7]  0.19348458  0.08252495 -2.15560172  0.02723626 -1.04292104  0.79587594
+    ## [13] -0.70743943 -0.70625483  0.33584198  1.35047546  0.32271769  0.71725218
+    ## [19]  0.01952805 -1.24065576 -1.20637254 -0.79186555 -0.91901687  1.84674563
+    ## [25]  0.45802210
 
 Looks like the same collection of z scores
 
@@ -111,14 +121,13 @@ y_vec = rnorm(40, mean = 12, sd = .3)
 z_scores(y_vec)
 ```
 
-    ##  [1]  1.414128866 -1.736208320 -0.693750209 -0.003416589 -0.963457430
-    ##  [6] -0.337437092  0.464325231 -0.201563611 -1.634743116  0.118489004
-    ## [11] -0.411236019 -0.520866202 -0.823430665 -0.225730170 -0.596811384
-    ## [16]  0.064360517 -0.808886514 -0.074062950  1.717695520  0.290057038
-    ## [21]  0.626767200  0.322534411 -1.941988236  1.835790592  0.593754327
-    ## [26]  0.448854486  2.227581360  0.625982143  1.017464402 -0.907186461
-    ## [31] -1.038585610 -0.532561008 -0.072077118 -0.332702266  0.400849851
-    ## [36] -0.347571543  2.231009598 -0.389971059 -0.898450867  1.093049893
+    ##  [1] -0.09169816 -0.34785766 -0.50845610 -1.19890989  0.84467731 -0.26174750
+    ##  [7]  1.10710172 -0.51278118 -0.53389041  0.89508294 -1.02031200 -0.24435627
+    ## [13]  0.13647690 -1.63674403  0.84468389  2.15732758  0.10708854 -0.80660652
+    ## [19]  0.42531002  0.74381958 -1.96019112 -0.68143539  1.51144268 -1.32341020
+    ## [25] -0.60079759  0.66951662  1.52515460 -1.60258069  1.08335459 -0.23718969
+    ## [31] -0.74529240  2.12685056  0.99250095  0.03357858 -0.68089961  0.08989877
+    ## [37]  0.36310888  0.01923711 -1.07493546  0.39388002
 
 How great is this!
 
@@ -245,7 +254,7 @@ mean_and_sd(y_vec)
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  12.1 0.331
+    ## 1  12.1 0.261
 
 ``` r
 mean_and_sd(x_vec)
@@ -254,7 +263,7 @@ mean_and_sd(x_vec)
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  4.32  5.69
+    ## 1  3.86  3.54
 
 Defined x as y\_vec then you can work things through without doing the
 full function just using the environment, but you have to be careful of
@@ -281,7 +290,7 @@ sim_data %>%
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  2.36  3.05
+    ## 1  1.60  3.30
 
 Let’s write a function that simulates data, computes the mean and sd.
 
@@ -315,4 +324,182 @@ sim_mean_sd(30, 4, 3)
     ## # A tibble: 1 × 2
     ##    mean    sd
     ##   <dbl> <dbl>
-    ## 1  4.41  2.78
+    ## 1  3.17  2.86
+
+## Revisit Napolean Dynamite
+
+``` r
+url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=1"
+
+dynamite_html = read_html(url)
+
+review_titles = 
+  dynamite_html %>%
+  html_elements(".a-text-bold span") %>%
+  html_text()
+
+review_stars = 
+  dynamite_html %>%
+  html_elements("#cm_cr-review_list .review-rating") %>%
+  html_text()
+
+review_text = 
+  dynamite_html %>%
+  html_elements(".review-text-content span") %>%
+  html_text()
+
+reviews = 
+  tibble(
+    title = review_titles,
+    stars = review_stars,
+    text = review_text
+)
+```
+
+Okay but there are a lot of pages of reviews
+
+Could copy and paste everything above to page number 2, 3, 4, 5, and
+update the reviews df to 2, 3, 4, etc.
+
+Instead, write a function that gets reviews based on page url
+
+``` r
+get_page_reviews = function(page_url) {
+  
+  page_html = read_html(page_url)
+
+  review_titles = 
+    page_html %>%
+    html_elements(".a-text-bold span") %>%
+    html_text()
+  
+  review_stars = 
+    page_html %>%
+    html_elements("#cm_cr-review_list .review-rating") %>%
+    html_text()
+  
+  review_text = 
+    page_html %>%
+    html_elements(".review-text-content span") %>%
+    html_text()
+  
+  reviews = 
+    tibble(
+      title = review_titles,
+      stars = review_stars,
+      text = review_text
+  )
+  
+  return(reviews)
+  
+}
+
+page_url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=1"
+
+get_page_reviews(page_url)
+```
+
+    ## # A tibble: 10 × 3
+    ##    title                                                 stars   text           
+    ##    <chr>                                                 <chr>   <chr>          
+    ##  1 this film is so good!                                 5.0 ou… "\n  VOTE FOR …
+    ##  2 Good movie                                            5.0 ou… "\n  Weird sto…
+    ##  3 I Just everyone to know this....                      5.0 ou… "\n  VOTE FOR …
+    ##  4 the cobweb in his hair during the bike ramp scene lol 5.0 ou… "\n  5 stars f…
+    ##  5 Best quirky movie ever                                5.0 ou… "\n  You all k…
+    ##  6 Classic Film                                          5.0 ou… "\n  Had to or…
+    ##  7 hehehehe                                              5.0 ou… "\n  goodjobbo…
+    ##  8 Painful                                               1.0 ou… "\n  I think I…
+    ##  9 GRAND                                                 5.0 ou… "\n  GRAND\n"  
+    ## 10 Hello, 90s                                            5.0 ou… "\n  So nostal…
+
+``` r
+url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=2"
+
+get_page_reviews(url)
+```
+
+    ## # A tibble: 10 × 3
+    ##    title                                       stars              text          
+    ##    <chr>                                       <chr>              <chr>         
+    ##  1 Cult Classic                                5.0 out of 5 stars "\n  Watched …
+    ##  2 Format was inaccurate                       4.0 out of 5 stars "\n  There wa…
+    ##  3 Good funny                                  3.0 out of 5 stars "\n  Would re…
+    ##  4 Not available w/in 48 hour window           1.0 out of 5 stars "\n  I couldn…
+    ##  5 Your mom went to college.                   5.0 out of 5 stars "\n  Classic …
+    ##  6 Very funny movie                            5.0 out of 5 stars "\n  I watch …
+    ##  7 Watch it twice! Trust me!                   5.0 out of 5 stars "\n  Nothing …
+    ##  8 A classic                                   5.0 out of 5 stars "\n  If you d…
+    ##  9 Can't say how many times I've seen          5.0 out of 5 stars "\n  Such a g…
+    ## 10 I pity the fool who doesn’t own this movie. 5.0 out of 5 stars "\n  I love t…
+
+``` r
+url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=3"
+
+get_page_reviews(url)
+```
+
+    ## # A tibble: 10 × 3
+    ##    title                                         stars              text        
+    ##    <chr>                                         <chr>              <chr>       
+    ##  1 I don’t know why it’s so popular!             2.0 out of 5 stars "\n  My gir…
+    ##  2 Okay                                          3.0 out of 5 stars "\n  Okay\n"
+    ##  3 A WHOLESOME comedic journey                   5.0 out of 5 stars "\n  Not a …
+    ##  4 Hilarious                                     5.0 out of 5 stars "\n  Funny\…
+    ##  5 Love it                                       5.0 out of 5 stars "\n  What o…
+    ##  6 WORTH IT!                                     5.0 out of 5 stars "\n  It's t…
+    ##  7 Funny movie.                                  5.0 out of 5 stars "\n  Great …
+    ##  8 Best movie ever!                              5.0 out of 5 stars "\n  Got th…
+    ##  9 I was stuck in the oil patch back in the day. 5.0 out of 5 stars "\n  I watc…
+    ## 10 Funny Dork humor                              5.0 out of 5 stars "\n  Humor …
+
+``` r
+base_url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber="
+
+urls = str_c(base_url, 1:5)
+
+bind_rows(
+  get_page_reviews(urls[1]),
+  get_page_reviews(urls[2]),
+  get_page_reviews(urls[3]),
+  get_page_reviews(urls[4]),
+  get_page_reviews(urls[5]))
+```
+
+    ## # A tibble: 50 × 3
+    ##    title                                                 stars   text           
+    ##    <chr>                                                 <chr>   <chr>          
+    ##  1 this film is so good!                                 5.0 ou… "\n  VOTE FOR …
+    ##  2 Good movie                                            5.0 ou… "\n  Weird sto…
+    ##  3 I Just everyone to know this....                      5.0 ou… "\n  VOTE FOR …
+    ##  4 the cobweb in his hair during the bike ramp scene lol 5.0 ou… "\n  5 stars f…
+    ##  5 Best quirky movie ever                                5.0 ou… "\n  You all k…
+    ##  6 Classic Film                                          5.0 ou… "\n  Had to or…
+    ##  7 hehehehe                                              5.0 ou… "\n  goodjobbo…
+    ##  8 Painful                                               1.0 ou… "\n  I think I…
+    ##  9 GRAND                                                 5.0 ou… "\n  GRAND\n"  
+    ## 10 Hello, 90s                                            5.0 ou… "\n  So nostal…
+    ## # … with 40 more rows
+
+Supposed I want to change something else - you can also add that into
+the function (i.e., get rid of the at the beginning of the function)
+
+You can pass in a summary function into your function (i.e., summarize
+this vector using the mean, median, standard deviation, etc.) - useful
+in factor reorder according to the median
+
+EXAMPLE OF SCOPING
+
+``` r
+f = function(x) {
+  z = x + y 
+  z
+}
+
+x = 1
+y = 2 
+
+f(x = y) 
+```
+
+    ## [1] 4
