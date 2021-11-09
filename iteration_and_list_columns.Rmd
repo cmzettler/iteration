@@ -1,0 +1,18 @@
+---
+title: "iteration and list columns"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(rvest)
+
+knitr::opts_chunk$set(
+  fig.width = 6, 
+  fig.asp = .6, 
+  out.width = "90%"
+)
+```
+
+iteration = doing the same thing over and over 
