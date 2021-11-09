@@ -16,3 +16,321 @@ knitr::opts_chunk$set(
 ```
 
 iteration = doing the same thing over and over 
+- doing the same thing with the same function over and over --> iterating 
+
+for loops 
+- loops are the easiest place to start
+- loops have an output object, a sequence to iterate over, the loop body, and (optionally) an input object 
+- basic structure: 
+
+input = list(_)
+output = list(_)
+
+for (i in 1:n) {
+    output[[i]] = f(input[[i]])
+    
+}
+
+Loop functions
+- loop process (supply input vector/ list; apply a function to each element; save the result to a vector/ list) is really common 
+- for loops can get tedious/ opaque 
+- loop functions are popular for cleaning up loops 
+    - we focus on purr::map()
+    - base R has lapply() and similar things - DONT USE THESE
+
+map
+- goal of map is to clarify the loop process 
+- basic structure: (input is the list I need to iterate over)
+  ouput = map(input, f)
+- benefit is clarity 
+
+map variants 
+- map takes one input and returns a list (by default) 
+- you can use specific variants to prevent errors (know the form that you will output)
+  map_dbl, map_lgl, map_ df
+- if you need to iterate over 2 inputs - you can use map variants to give 2 inputs 
+
+Process for iteration: 
+- write a single example, embed example into a loop, abstract loop body to a function, re-write using a map statement
+- make sure something works and then try to iterate however feels most natural 
+
+LISTS: 
+- dataframes provide a nice data rectangle (UNIFORM) = special list 
+- ouputs that are less uniform/ nicely structured = LIST 
+- you can put anything in the list (including a list) 
+- list columns --> df 
+
+## Lists 
+
+```{r}
+l = list(
+  vec_numeric = 5:8, 
+  vec_logical = c(TRUE, FALSE), 
+  summary = summary(rnorm(1000, mean = 5, sd = 3))
+)
+
+l[[3]]
+
+l[["summary"]]
+
+l$summary
+```
+
+Looks nothing like a dataframe 
+
+## list of normals
+
+```{r}
+list_norms = 
+  list(
+    a = rnorm(50, mean = 2, sd = 1), 
+    b = rnorm(50, mean = 5, sd = 3), 
+    c = rnorm(50, mean = 20, sd = 1.2), 
+    d = rnorm(50, mean = -12, sd = 0.5) 
+  )
+```
+
+what if we want to take the mean and sd of this list? 
+
+```{r}
+mean_and_sd = function(x) {
+  
+  if(!is.numeric(x)) {
+    stop("x needs to be numeric")
+  }
+  if(length(x) < 3) {
+    stop("x should have at least 3 numbers")
+  }
+  mean_x = mean(x) 
+  sd_x = sd(x)
+  
+  output_df = 
+    tibble(
+      mean = mean_x, 
+      sd = sd_x
+    )
+  
+  return(output_df)
+  
+}
+
+mean_and_sd(list_norms[[1]])
+mean_and_sd(list_norms[[2]])
+mean_and_sd(list_norms[[3]])
+mean_and_sd(list_norms[[4]])
+```
+
+Why use numbers instead of letters (use element #x instead of remembering the names each time)
+
+## for loop 
+
+Let's use a for loop to iterate over my list of normals. 
+
+```{r}
+output = vector("list", length = 4)
+
+for(i in 1:4) {
+  
+  output[[i]] = mean_and_sd(list_norms[[i]])
+  
+}
+
+
+```
+
+let's use map instead ...
+
+```{r}
+output = map(list_norms, mean_and_sd) 
+
+output = map(list_norms, median) 
+
+output = map(list_norms, summary) 
+
+output = map(list_norms, IQR) 
+```
+
+default outputs as a list 
+
+```{r}
+output = map_dbl(list_norms, median)
+```
+
+## LIST COLUMNS!! 
+
+```{r}
+list_col_df = 
+  tibble(
+    name = c("a", "b", "c", "d"), 
+    norms = list_norms
+  )
+```
+
+it has lists in one of the columns but we can do normal things to dataframes 
+
+```{r}
+list_col_df %>% 
+  filter(name == "a")
+
+list_col_df %>% 
+  pull(name) 
+
+list_col_df %>% 
+  pull(norms) 
+
+list_col_df$norms[[1]]
+
+mean_and_sd(list_col_df$norms[[1]])
+mean_and_sd(list_col_df$norms[[2]])
+mean_and_sd(list_col_df$norms[[3]])
+mean_and_sd(list_col_df$norms[[4]])
+
+list_col_df %>% 
+  mutate(summaries = map(norms, mean_and_sd)) 
+
+list_col_df %>% 
+  mutate(summaries = map(norms, mean_and_sd)) %>% 
+  pull(summaries)
+```
+
+playing with various ways of extracting list elements from a list column
+
+## Nested data
+
+When would you atually end up with a dataframe inside of a dataframe? 
+
+```{r}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728", "USC00519397", "USS0023B17S"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2017-01-01",
+    date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(
+      id, 
+      USW00094728 = "CentralPark_NY", 
+      USC00519397 = "Waikiki_HA",
+      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+```
+
+We have a lot of information nested into one study item (Central Park, Waterhole, Waikiki)
+
+Nest data within location  
+
+```{r}
+weather_nested = nest(weather_df, data = date:tmin)
+
+weather_nested %>% 
+  filter(name == "CentralPark_NY") %>% 
+  pull(data) 
+
+weather_nested %>% 
+  pull(data) 
+```
+
+Let's do something with linear regression - let's say we want to see how tmax is related to tmin
+
+```{r}
+weather_nested$data[[1]]
+weather_nested$data[[2]]
+weather_nested$data[[3]]
+
+lm(tmax ~tmin, data = weather_nested$data[[1]])
+lm(tmax ~tmin, data = weather_nested$data[[2]])
+lm(tmax ~tmin, data = weather_nested$data[[3]])
+
+weather_lm = function(df) {
+  
+  lm(tmax ~tmin, data = df)
+
+}
+
+weather_lm(weather_nested$data[[1]])
+
+lm(tmax ~tmin, data = weather_nested$data[[1]])
+
+```
+
+bottom two things are the same (using function vs. not) 
+
+I want to have another column inside of my dataset that is the result of the linear model fit 
+
+```{r}
+map(weather_nested$data, weather_lm) 
+
+weather_nested %>% 
+  mutate(lm_results = map(data, weather_lm))
+
+```
+
+You can also unnest
+
+```{r}
+unnest(weather_nested, data)
+
+weather_nested %>% 
+  unnest(data)
+```
+
+Can also use pipes 
+
+## Revist Napoleon 
+
+Function to get reviews/ stars
+
+```{r}
+get_page_reviews = function(page_url) {
+  
+  page_html = read_html(page_url)
+
+  review_titles = 
+    page_html %>%
+    html_elements(".a-text-bold span") %>%
+    html_text()
+  
+  review_stars = 
+    page_html %>%
+    html_elements("#cm_cr-review_list .review-rating") %>%
+    html_text()
+  
+  review_text = 
+    page_html %>%
+    html_elements(".review-text-content span") %>%
+    html_text()
+  
+  reviews = 
+    tibble(
+      title = review_titles,
+      stars = review_stars,
+      text = review_text
+  )
+  
+  return(reviews)
+  
+}
+
+
+base_url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber="
+
+urls = str_c(base_url, 1:5)
+
+map(urls, get_page_reviews)
+
+napoleon_df = 
+  tibble(
+    urls = urls
+)
+
+napoleon_df %>% 
+  mutate(reviews = map(urls, get_page_reviews)) %>% 
+  select(reviews) %>% 
+  unnest()
+
+```
+
+
+
